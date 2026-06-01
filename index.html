@@ -1,0 +1,202 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+    <meta charset="UTF-8">
+    <title>Викторина по Python</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            background: #f0f0f0;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            min-height: 100vh;
+            margin: 0;
+            padding: 20px;
+        }
+        .quiz {
+            background: white;
+            border-radius: 15px;
+            padding: 25px;
+            max-width: 550px;
+            width: 100%;
+            box-shadow: 0 5px 15px rgba(0,0,0,0.2);
+        }
+        .question {
+            font-size: 20px;
+            font-weight: bold;
+            margin-bottom: 20px;
+        }
+        .option {
+            background: #f9f9f9;
+            border: 1px solid #ccc;
+            padding: 12px;
+            margin: 8px 0;
+            border-radius: 8px;
+            cursor: pointer;
+        }
+        .option:hover {
+            background: #e9e9e9;
+        }
+        .correct {
+            background: #4CAF50;
+            color: white;
+            border-color: #2e7d32;
+        }
+        .wrong {
+            background: #f44336;
+            color: white;
+            border-color: #c62828;
+        }
+        button {
+            background: #2196F3;
+            color: white;
+            border: none;
+            padding: 10px 20px;
+            border-radius: 8px;
+            cursor: pointer;
+            font-size: 16px;
+            margin-top: 15px;
+        }
+        button:hover {
+            background: #1976D2;
+        }
+        .result {
+            text-align: center;
+        }
+        .score {
+            font-size: 40px;
+            font-weight: bold;
+            color: #4CAF50;
+            margin: 20px 0;
+        }
+        .welcome {
+            text-align: center;
+        }
+        .welcome h1 {
+            color: #2196F3;
+            margin-bottom: 15px;
+        }
+        .welcome p {
+            font-size: 18px;
+            margin-bottom: 25px;
+            color: #555;
+        }
+        .start-btn {
+            background: #4CAF50;
+            font-size: 18px;
+            padding: 12px 30px;
+        }
+        .start-btn:hover {
+            background: #45a049;
+        }
+    </style>
+</head>
+<body>
+<div class="quiz" id="quiz"></div>
+
+<script>
+    const questions = [
+        {text: "Какой результат выведет print(type(True))?", options: ["&lt;class 'int'&gt;", "&lt;class 'str'&gt;", "&lt;class 'bool'&gt;"], correct: 2},
+        {text: "Что делает метод .append() для списка?", options: ["Вставляет в начало", "Добавляет в конец", "Удаляет последний"], correct: 1},
+        {text: "Оператор целочисленного деления в Python?", options: ["/", "//", "%"], correct: 1},
+        {text: "Что выведет print(3 * 'a' + 'b')?", options: ["'aaabbb'", "'aaab'", "'ab'"], correct: 1},
+        {text: "Кортеж с одним элементом?", options: ["(1)", "(1,)", "[1]"], correct: 1},
+        {text: "Что выдаст range(3, 10, 2)?", options: ["3,4,5,6,7,8,9", "3,5,7,9", "3,5,7,9,10"], correct: 1},
+        {text: "Что получится при 'Python'[::-1] ?", options: ["'Python'", "'nohtyP'", "'Pyt'"], correct: 1},
+        {text: "Какое слово ловит ошибки?", options: ["catch", "except", "handle"], correct: 1},
+        {text: "Что делает функция zip()?", options: ["Сжимает список", "Соединяет в пары", "Сортирует"], correct: 1},
+        {text: "Что вернёт bool([]) ?", options: ["True", "False", "Ошибку"], correct: 1}
+    ];
+
+    let current = 0;
+    let answers = new Array(10).fill(null);
+    let finished = false;
+
+    const quizDiv = document.getElementById("quiz");
+
+    function showWelcome() {
+        quizDiv.innerHTML = `
+            <div class="welcome">
+                <h1>Привет, тест от Саши Меньшикова</h1>
+                <p>Тест по Python состоит из ${questions.length} вопросов</p>
+                <p>На каждый вопрос нужно выбрать один вариант ответа</p>
+                <button class="start-btn" onclick="startQuiz()">Начать тест →</button>
+            </div>
+        `;
+    }
+
+    function startQuiz() {
+        renderQuestion();
+    }
+
+    function showResult() {
+        let correctCount = 0;
+        for (let i = 0; i < questions.length; i++) {
+            if (answers[i] === questions[i].correct) correctCount++;
+        }
+        let percent = Math.round((correctCount / questions.length) * 100);
+        quizDiv.innerHTML = `
+            <div class="result">
+                <h2>Результаты</h2>
+                <div class="score">${correctCount} из ${questions.length}</div>
+                <div>${percent}%</div>
+                <button onclick="restartQuiz()">Начать заново</button>
+            </div>
+        `;
+        finished = true;
+    }
+
+    function nextQuestion() {
+        if (answers[current] === null) return;
+        if (current + 1 < questions.length) {
+            current++;
+            renderQuestion();
+        } else {
+            showResult();
+        }
+    }
+
+    function answerQuestion(selected) {
+        if (answers[current] !== null) return;
+        answers[current] = selected;
+        renderQuestion();
+    }
+
+    function renderQuestion() {
+        if (finished) return;
+        let q = questions[current];
+        let selected = answers[current];
+        
+        let optionsHtml = "";
+        for (let i = 0; i < q.options.length; i++) {
+            let extraClass = "";
+            if (selected !== null) {
+                if (i === q.correct) extraClass = "correct";
+                else if (i === selected && selected !== q.correct) extraClass = "wrong";
+            }
+            optionsHtml += `<div class="option ${extraClass}" onclick="answerQuestion(${i})">${q.options[i]}</div>`;
+        }
+        
+        let btnText = current + 1 === questions.length ? "Завершить" : "Следующий";
+        let btnDisabled = selected === null ? "disabled" : "";
+        
+        quizDiv.innerHTML = `
+            <div class="question">${q.text}</div>
+            ${optionsHtml}
+            <button onclick="nextQuestion()" ${btnDisabled}>${btnText}</button>
+            <button onclick="showResult()" style="background:#ff9800; margin-left:10px;">Результаты</button>
+        `;
+    }
+
+    function restartQuiz() {
+        current = 0;
+        answers = new Array(10).fill(null);
+        finished = false;
+        showWelcome();
+    }
+
+    showWelcome();
+</script>
+</body>
+</html>
